@@ -22,7 +22,7 @@ from torch import nn
 from torch.utils.data import IterableDataset
 
 from .. import utils
-from ..tokenizers import PeptideTokenizer
+from ..tokenizers import Tokenizer, PeptideTokenizer
 from . import arrow
 
 LOGGER = logging.getLogger(__name__)
@@ -328,6 +328,10 @@ class AnnotatedSpectrumDataset(SpectrumDataset):
         The tokenizer for the annotations.
     annotations : str
         The annotation column in the dataset.
+    peak_annotations: str 
+        The annotation column in the dataset that indicates the peak level annotations
+    peak_tokenizer: Tokenizer 
+        The tokenizer to be used for peak level annotations
 
     """
 
@@ -339,10 +343,14 @@ class AnnotatedSpectrumDataset(SpectrumDataset):
         batch_size: int,
         path: PathLike = None,
         parse_kwargs: dict | None = None,
+        peak_annotations: str | None = None,
+        peak_tokenizer: Tokenizer | None = None, 
         **kwargs: dict,
     ) -> None:
         """Initialize an AnnotatedSpectrumDataset."""
         self.tokenizer = tokenizer
+        self.peak_annotations = peak_annotations 
+        self.peak_tokenizer = peak_tokenizer
         self.annotations = annotations
         super().__init__(
             spectra=spectra,
@@ -379,6 +387,13 @@ class AnnotatedSpectrumDataset(SpectrumDataset):
             add_start=self.tokenizer.start_token is not None,
             add_stop=self.tokenizer.stop_token is not None,
         )
+        if self.peak_annotations is not None: 
+            batch[self.peak_annotations] = self.peak_tokenizer(
+                batch[self.peak_annotations], 
+                add_start = self.tokenizer.start_token is not None, 
+                add_stop = self.tokenizer.stop_token is not None,
+            )
+
         return batch
 
     @classmethod
@@ -389,6 +404,8 @@ class AnnotatedSpectrumDataset(SpectrumDataset):
         tokenizer: PeptideTokenizer,
         batch_size: int,
         parse_kwargs: dict | None = None,
+        peak_annotations: str | None = None, 
+        peak_tokenizer: Tokenizer | None = None,  
         **kwargs: dict,
     ) -> AnnotatedSpectrumDataset:
         """Load a previously created lance dataset.
@@ -421,6 +438,8 @@ class AnnotatedSpectrumDataset(SpectrumDataset):
         return cls(
             spectra=None,
             annotations=annotations,
+            peak_annotations=peak_annotations, 
+            peak_tokenizer=peak_tokenizer,
             tokenizer=tokenizer,
             batch_size=batch_size,
             path=path,
