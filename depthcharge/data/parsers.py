@@ -563,7 +563,6 @@ class AsfParser(MgfParser):
         spectrum from the corresponding Pyteomics parser.
     progress : bool, optional
         Enable or disable the progress bar.
-
     """
 
     def __init__(
