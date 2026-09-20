@@ -266,6 +266,14 @@ class SpectrumDataset(LanceDataset):
             batch["intensity_array"],
             batch_first=True,
         )
+        custom_fields = self._parse_kwargs.get("custom_fields")
+        if custom_fields is not None: 
+            for field in utils.listify(custom_fields):
+                if field.pad:
+                    batch[field.name] = nn.utils.rnn.pad_sequence(
+                        batch[field.name], batch_first = True
+                    )
+                    
         return batch
 
 
