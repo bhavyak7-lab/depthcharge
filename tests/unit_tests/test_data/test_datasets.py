@@ -3,6 +3,7 @@
 import pickle
 import shutil
 
+import polars as pl
 import pyarrow as pa
 import pytest
 import torch
@@ -194,6 +195,43 @@ def test_with_molecule_tokenizer():
 
     torch.testing.assert_close(dset.tokens, tokens)
 
+def test_custom_field_padding(tmp_path):
+    """Test padding custom fields."""
+
+    spectra = pl.DataFrame(
+        {
+            "mz_array": [[1.0, 2.0], [3.0, 4.0, 5.0]],
+            "intensity_array": [[10.0, 20.0], [30.0, 40.0, 50.0]],
+            "custom_array": [[1.0, 2.0], [3.0, 4.0, 5.0]],
+        }
+    )
+
+    dataset = SpectrumDataset(
+        spectra,
+        path=tmp_path / "test",
+        batch_size=2,
+        parse_kwargs={
+            "custom_fields": CustomField(
+                "custom_array",
+                lambda x: x["custom_array"],
+                pa.list_(pa.float64()),
+                pad=True,
+            )
+        },
+    )
+
+    batch = next(iter(dataset))
+
+    assert batch["custom_array"].shape == (2, 3)
+    torch.testing.assert_close(
+        batch["custom_array"],
+        torch.tensor(
+            [
+                [1.0, 2.0, 0.0],
+                [3.0, 4.0, 5.0],
+            ]
+        ),
+    )
 
 def test_pickle(tokenizer, tmp_path, mgf_small):
     """Test that datasets can be pickled."""
