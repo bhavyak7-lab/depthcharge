@@ -195,6 +195,7 @@ def test_with_molecule_tokenizer():
 
     torch.testing.assert_close(dset.tokens, tokens)
 
+
 def test_custom_field_padding(tmp_path):
     """Test padding custom fields."""
     spectra = pl.DataFrame(
@@ -231,6 +232,7 @@ def test_custom_field_padding(tmp_path):
             ]
         ),
     )
+
 
 def test_pickle(tokenizer, tmp_path, mgf_small):
     """Test that datasets can be pickled."""
