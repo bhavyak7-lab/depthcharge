@@ -197,7 +197,6 @@ def test_with_molecule_tokenizer():
 
 def test_custom_field_padding(tmp_path):
     """Test padding custom fields."""
-
     spectra = pl.DataFrame(
         {
             "mz_array": [[1.0, 2.0], [3.0, 4.0, 5.0]],
