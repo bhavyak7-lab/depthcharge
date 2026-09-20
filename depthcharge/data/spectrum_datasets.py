@@ -271,7 +271,7 @@ class SpectrumDataset(LanceDataset):
             for field in utils.listify(custom_fields):
                 if field.pad:
                     batch[field.name] = nn.utils.rnn.pad_sequence(
-                        batch[field.name], batch_first = True
+                        batch[field.name], batch_first=True
                     )
 
         return batch
